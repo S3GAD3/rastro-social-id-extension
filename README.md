@@ -67,23 +67,4 @@ Extensión del Kit RASTRO para Chrome y Edge (Manifest V3, Chrome 111 o superior
 - El historial (máximo 3.000 registros, con fotos) se guarda solo en el almacenamiento local de la extensión.
 - Los endpoints son internos de cada red y pueden cambiar. Cada red está en su propio archivo dentro de `providers/`.
 
-
-## Identidad visual
-- Logotipo integrado **RASTRO ID** con las letras en amarillo y **ID** destacado.
-- Iconos de la extensión actualizados para navegador y cabecera de la interfaz.
-- Informe HTML alineado con la nueva identidad visual.
-
-## Publicación en GitHub
-Contenido recomendado del repositorio:
-- `manifest.json`
-- `background.js`
-- `providers/`
-- `capture/`
-- `lib/`
-- `report/`
-- `ui/`
-- `icons/`
-- `logo-rastro-id.png`
-- `README.md`
-- `LICENSE`
-- `.gitignore`
+LICENCIA MIT
