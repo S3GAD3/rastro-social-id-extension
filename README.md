@@ -9,9 +9,10 @@ Extensión del Kit RASTRO para Chrome y Edge (Manifest V3, Chrome 111 o superior
 | X | ✔ | ✔ | **Necesaria** (inicia sesión en x.com en ese navegador) |
 
 ## Instalación
-1. Descomprime `rastro-social-id-extension.zip` en una carpeta fija.
-2. Abre `chrome://extensions` (o `edge://extensions`) y activa el **Modo de desarrollador**.
-3. Pulsa **Cargar descomprimida** y elige la carpeta `rastro-social-id-extension`.
+1. Descarga el archivo .zip de la herramienta desde el apartado releases: https://github.com/S3GAD3/rastro-social-id-extension/releases
+2. Descomprime `rastro-social-id-extension.zip` en una carpeta fija. Importante que guardes la carpeta descomprimida en un sitio fijo.
+3. Abre `chrome://extensions` (o `edge://extensions`) y activa el **Modo de desarrollador**.
+4. Pulsa **Cargar descomprimida** y elige la carpeta `rastro-social-id-extension`.
 
 ## Uso
 - **Consulta:** elige la red o pega directamente la URL del perfil; la red se detecta sola.
