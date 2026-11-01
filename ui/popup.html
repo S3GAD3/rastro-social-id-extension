@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Rastro ID</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <img class="brand-logo" src="../icons/logo-rastro-id-banner.png" alt="Rastro ID">
+      <div class="brand-meta">
+        <span class="brand-title">Rastro <b>ID</b></span>
+        <span class="brand-subtitle">Extensión OSINT para obtención de IDs de perfiles</span>
+      </div>
+    </div>
+    <div class="head-right">
+      <span id="sessions" class="sessions"></span>
+      <button id="openTab" class="icon-btn" title="Abrir en pestaña">⤢</button>
+    </div>
+  </header>
+
+  <div class="ref">
+    <label for="caseRef">Referencia</label>
+    <input id="caseRef" type="text" placeholder="Nº diligencias / expediente (opcional)" autocomplete="off">
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="single">Consulta</button>
+    <button class="tab" data-tab="batch">Lotes</button>
+    <button class="tab" data-tab="history">Historial <span id="histCount"></span></button>
+    <button class="tab" data-tab="report">Informe <span id="repCount" class="count"></span></button>
+  </nav>
+
+  <!-- Consulta individual -->
+  <section id="tab-single" class="panel active">
+    <div class="seg" id="platformSeg">
+      <button data-p="instagram" class="active">Instagram</button>
+      <button data-p="tiktok">TikTok</button>
+      <button data-p="x">X</button>
+    </div>
+    <div class="mode">
+      <label><input type="radio" name="mode" value="username" checked> Username → ID</label>
+      <label id="idModeLabel"><input type="radio" name="mode" value="id"> ID → Username</label>
+    </div>
+    <div class="row">
+      <input id="query" type="text" placeholder="@usuario o URL de perfil" autocomplete="off" spellcheck="false">
+      <button id="go" class="primary">Buscar</button>
+    </div>
+    <div class="row between">
+      <button id="fromTab" class="link">Usar el perfil de la pestaña actual</button>
+      <span id="hint" class="small muted"></span>
+    </div>
+    <div id="result"></div>
+  </section>
+
+  <!-- Lotes -->
+  <section id="tab-batch" class="panel">
+    <div class="row between">
+      <label class="small">Red por defecto
+        <select id="bPlatform">
+          <option value="instagram">Instagram</option>
+          <option value="tiktok">TikTok</option>
+          <option value="x">X</option>
+        </select>
+      </label>
+      <div class="mode">
+        <label><input type="radio" name="bmode" value="username" checked> Usernames</label>
+        <label><input type="radio" name="bmode" value="id"> IDs</label>
+      </div>
+    </div>
+    <textarea id="batchInput" rows="6" placeholder="Uno por línea. Las URL se detectan solas.&#10;Prefijos: ig:usuario  tt:usuario  x:usuario&#10;https://www.tiktok.com/@usuario&#10;https://x.com/usuario" spellcheck="false"></textarea>
+    <div class="row between">
+      <label class="small">Pausa entre consultas
+        <input id="delay" type="number" min="1" max="120" value="3"> s
+      </label>
+      <div>
+        <button id="batchStop" class="ghost" disabled>Parar</button>
+        <button id="batchGo" class="primary">Procesar</button>
+      </div>
+    </div>
+    <div class="small muted">En X la pausa mínima es de 6 s. Para lotes largos abre la herramienta en pestaña (⤢).</div>
+    <div id="progress" class="progress hidden"><div></div></div>
+    <div id="batchStatus" class="small muted"></div>
+    <button id="batchToReport" class="ghost hidden">＋ Añadir los resultados al informe</button>
+    <table id="batchTable" class="hidden">
+      <thead><tr><th>Red</th><th>Consulta</th><th>ID</th><th>Username</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <!-- Historial -->
+  <section id="tab-history" class="panel">
+    <div class="row">
+      <input id="histFilter" type="text" placeholder="Filtrar por username, ID, nombre o referencia" autocomplete="off">
+      <select id="histNet">
+        <option value="">Todas</option>
+        <option value="instagram">IG</option>
+        <option value="tiktok">TT</option>
+        <option value="x">X</option>
+      </select>
+    </div>
+    <div class="row between actions">
+      <div>
+        <button id="expJson" class="ghost">JSON</button>
+        <button id="expCsv" class="ghost">CSV</button>
+      </div>
+      <button id="clearHist" class="danger">Borrar</button>
+    </div>
+    <div id="histList"></div>
+  </section>
+
+  <!-- Informe -->
+  <section id="tab-report" class="panel">
+    <div class="step"><span class="num">1</span> Perfiles que entran en el informe</div>
+    <div class="row">
+      <input id="rSearch" type="text" placeholder="Buscar username, ID, nombre o referencia" autocomplete="off">
+      <select id="rNet">
+        <option value="">Todas</option>
+        <option value="instagram">IG</option>
+        <option value="tiktok">TT</option>
+        <option value="x">X</option>
+      </select>
+    </div>
+    <div class="row between small">
+      <label class="inline" title="Mostrar solo los perfiles consultados con la referencia actual"><input id="rOnlyRef" type="checkbox"> Solo referencia actual</label>
+      <span>
+        <button id="rOnlySel" class="link" title="Mostrar solo los seleccionados">Seleccionados</button> ·
+        <button id="rAll" class="link">Marcar todos</button> ·
+        <button id="rNone" class="link">Ninguno</button>
+      </span>
+    </div>
+    <div id="rList" class="plist"></div>
+
+    <div class="step"><span class="num">2</span> Datos del informe</div>
+    <div class="form">
+      <div class="two">
+        <label>Unidad <input id="rUnit" type="text" placeholder="Unidad / grupo" autocomplete="off"></label>
+        <label>Investigador / TIP <input id="rInv" type="text" placeholder="Nombre o TIP" autocomplete="off"></label>
+      </div>
+      <label>Observaciones <textarea id="rNotes" rows="2" placeholder="Texto libre que aparecerá en el informe (opcional)"></textarea></label>
+      <div class="checks">
+        <label><input id="rPhotos" type="checkbox" checked> Fotos de perfil</label>
+        <label><input id="rAllQ" type="checkbox"> Todas las consultas de cada perfil</label>
+        <label><input id="rErrors" type="checkbox"> Consultas sin resultado de la referencia</label>
+      </div>
+    </div>
+
+    <div class="step"><span class="num">3</span> Generar</div>
+    <div id="rSelInfo" class="selinfo">Ningún perfil seleccionado</div>
+    <div class="row">
+      <button id="rHtml" class="primary" disabled>Abrir informe HTML</button>
+      <button id="rTxt" class="ghost" disabled>Descargar TXT</button>
+    </div>
+    <div class="small muted">El HTML se abre en una pestaña para imprimir o guardar como PDF. Cada descarga lleva su fichero .sha256.</div>
+  </section>
+
+  <footer class="small muted">
+    Las consultas salen desde este navegador con tu IP y tus sesiones de cada red.
+  </footer>
+
+  <div id="toast" class="toast"></div>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
