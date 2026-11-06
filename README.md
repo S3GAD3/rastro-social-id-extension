@@ -109,6 +109,6 @@ La extensión utiliza **Manifest V3**. El historial y el estado temporal de la c
 
 Desarrollado por **S3GAD3** como parte del **Kit RASTRO**.
 
-Licencia **MIT**. Para publicarlo en GitHub con esta licencia, añade también el archivo `LICENSE` que contenga el texto completo de la licencia MIT y el titular de copyright correspondiente.
+Licencia **MIT**. [LICENSE](https://github.com/S3GAD3/rastro-social-id-extension/blob/main/LICENSE)
 
 Este proyecto es una herramienta independiente de investigación en fuentes abiertas. No está afiliado ni respaldado por las plataformas consultadas.
