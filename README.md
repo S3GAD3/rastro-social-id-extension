@@ -1,71 +1,114 @@
-# RASTRO ID
+<div align="center">
+  <img src="icons/logo-rastro-id-banner.png" alt="RASTRO ID" width="420">
 
-Extensión del Kit RASTRO para Chrome y Edge (Manifest V3, Chrome 111 o superior). Obtiene el ID numérico de perfiles de **Instagram, TikTok y X** y genera informes exportables.
+  # RASTRO ID
 
-| Red | Username → ID | ID → Username | Sesión |
-|---|---|---|---|
-| Instagram | ✔ | ✔ | Opcional para username → ID; necesaria para ID → username |
-| TikTok | ✔ | — (no hay método fiable) | No necesaria |
-| X | ✔ | ✔ | **Necesaria** (inicia sesión en x.com en ese navegador) |
+  **Extensión OSINT para identificar y documentar IDs de perfiles en redes sociales**
 
-## Instalación
-1. Descarga el archivo .zip de la herramienta desde el apartado releases: https://github.com/S3GAD3/rastro-social-id-extension/releases
-2. Descomprime `rastro-social-id-extension.zip` en una carpeta fija. Importante que guardes la carpeta descomprimida en un sitio fijo.
-3. Abre `chrome://extensions` (o `edge://extensions`) y activa el **Modo de desarrollador**.
-4. Pulsa **Cargar descomprimida** y elige la carpeta `rastro-social-id-extension`.
+  Chrome / Edge · Manifest V3 · Versión 1.2.6 (prueba) · Creado por **S3GAD3**
+</div>
 
-## Uso
-- **Consulta:** elige la red o pega directamente la URL del perfil; la red se detecta sola.
-  - El botón "Usar el perfil de la pestaña actual" sirve para las tres redes.
-  - X tarda unos segundos, porque abre el perfil en una pestaña en segundo plano.
-- **Lotes:** uno por línea. Puedes mezclar redes con URLs o con los prefijos `ig:`, `tt:` y `x:`.
-  - Pausa mínima: 6 s en X y 2 s en TikTok.
-  - El lote se detiene solo ante un 429, o si X exige sesión o devuelve 403.
-- **Historial:** se puede filtrar por red y por texto, y exportar a JSON o CSV.
-- **Informe:** funciona como un carrito.
-  - **Añadir perfiles:** con el botón «＋ Añadir al informe», que aparece en:
-    - la ficha de cada consulta;
-    - cada línea del historial;
-    - el final de un lote («Añadir los N perfiles encontrados»).
-  - El número junto a la pestaña **Informe** indica cuántos perfiles hay seleccionados.
-  - **Pestaña Informe:**
-    1. Lista de perfiles únicos, cada uno con su última consulta. Se marca o desmarca con un clic, y se puede buscar, filtrar por red o por referencia actual, y ver solo los seleccionados.
-    2. Datos del informe: unidad, investigador/TIP y observaciones. Opciones de fotos, todas las consultas de cada perfil y consultas sin resultado.
-    3. Generar: **Abrir informe HTML**, para imprimir o guardar como PDF, o **Descargar TXT**. Cada descarga lleva su `.sha256`.
-  - La selección se conserva al cerrar la ventana.
+## Descripción
 
-## Contenido del informe
-1. Datos del informe: referencia, unidad, investigador, fecha UTC y local, y hash del conjunto de datos.
-2. Resumen de los perfiles: red, username, ID, nombre y hora de consulta.
-3. Ficha de cada perfil: foto embebida, ID, username, nombre, bio, enlaces, contadores, privacidad, verificación, fecha de creación y su origen, datos extra y método.
-   - Datos extra: FBID en Instagram; secUid y último cambio de username en TikTok; verificación azul en X.
-   - Incluye el hash SHA-256 del registro y el de la foto.
-4. Consultas sin resultado (opcional).
-5. Metodología de cada red utilizada.
-6. Observaciones y espacio para firmas.
+**RASTRO ID** es una extensión de navegador del **Kit RASTRO** orientada a la investigación en fuentes abiertas (OSINT). Permite consultar identificadores numéricos de perfiles, conservar las consultas en un historial local y elaborar informes exportables para documentar los resultados.
 
-## Fecha de creación
-- **X:** la devuelve la API. Además se calcula a partir del ID (Snowflake) para contrastarla.
-- **TikTok:** se calcula a partir del ID (32 bits superiores = segundos Unix).
-- **Instagram:** no se puede calcular, porque sus IDs son secuenciales.
+La versión **1.2.6** incorpora mejoras en Instagram frente a errores HTTP de sus endpoints internos y un procedimiento de **contraste asistido** para las consultas inversas que no pueden resolverse automáticamente.
 
-## Cómo funciona
-- **Instagram:** obtiene el ID con la misma lógica que Rastro InstaId (`web_profile_info`, con el HTML como respaldo).
-  - Si el ID sale del HTML, completa la ficha con `users/{id}/info` cuando hay sesión.
-  - Sin sesión, saca del HTML el nombre, los contadores aproximados y la foto.
-- **Fotos de perfil:** se descargan desde la extensión enviando a la CDN de cada red el `Referer` de su web y sin la cabecera `Origin`.
-  - Se prueban varias resoluciones.
-  - Si no se consigue, el motivo queda registrado en la ficha («Foto de perfil: …»).
-- **TikTok:** descarga el perfil y lee el JSON incrustado `__UNIVERSAL_DATA_FOR_REHYDRATION__`. Si hay captcha o bloqueo, lo lee desde una pestaña en segundo plano.
-- **X:** abre el perfil, o `x.com/i/user/{id}`, en una pestaña en segundo plano. Captura de forma pasiva la respuesta `UserByScreenName` o `UserByRestId` que pide la propia web de X.
-  - Así no depende de los identificadores de consulta ni de las cabeceras que X cambia a menudo.
-  - El script de captura se ejecuta en x.com, pero solo lee esas dos respuestas, no modifica nada, y el service worker las descarta si la pestaña no la abrió una consulta.
+> **Importante:** es una versión de prueba. Los servicios de las plataformas pueden cambiar, exigir una sesión o restringir las peticiones. Una respuesta 403, 404 o 429 no demuestra por sí misma que el perfil no exista.
 
-## Notas operativas
-- Usa cuentas de trabajo en cada red: las consultas quedan asociadas a esa sesión.
-- X suspende cuentas que hacen consultas masivas, así que mantén pausas amplias.
-- TikTok: si aparece "posible captcha", abre tiktok.com, resuélvelo y repite la consulta.
-- El historial (máximo 3.000 registros, con fotos) se guarda solo en el almacenamiento local de la extensión.
-- Los endpoints son internos de cada red y pueden cambiar. Cada red está en su propio archivo dentro de `providers/`.
+## Redes compatibles
 
-LICENCIA MIT
+| Plataforma | Username → ID | ID → Username | Observaciones |
+|:--|:--:|:--:|:--|
+| Instagram | ✅ | ⚠️ | Consulta inversa directa cuando está disponible; historial local y contraste asistido para IDs desconocidos. |
+| Facebook | ✅ | — | La extracción depende de que el ID sea accesible en la URL o en los datos públicos del perfil. |
+| TikTok | ✅ | — | Extracción desde los datos accesibles del perfil. |
+| X (Twitter) | ✅ | ✅ | Puede requerir una sesión iniciada en X; se basa en las respuestas que carga la plataforma. |
+
+**✅** Funcionalidad implementada, sujeta a disponibilidad y restricciones de cada red. **⚠️** No hay resolución automática fiable para todos los IDs desconocidos.
+
+## Funcionalidades principales
+
+- **Consulta individual:** introducción de username, URL o ID según la plataforma y el modo seleccionado.
+- **Consulta por lotes:** entradas múltiples, detección de redes mediante URL o prefijos y pausas entre consultas.
+- **Historial local:** registros de consultas y resultados, filtros y exportación a **JSON** y **CSV**.
+- **Informes:** selección de perfiles, referencia de diligencias, unidad, investigador/TIP y observaciones; informes **HTML** imprimibles o convertibles a PDF y **TXT**.
+- **Trazabilidad:** método de obtención, fecha/hora y hashes **SHA-256** para los registros o descargas según corresponda.
+- **Identidad visual del Kit RASTRO:** logotipo RASTRO ID en amarillo y diseño institucional en tonos azules.
+
+## Novedades de la versión 1.2.6
+
+### Instagram: mayor tolerancia a errores
+
+La ruta `web_profile_info` puede responder con un **HTTP 404**, incluso cuando el perfil está disponible. La extensión intenta obtener el ID mediante el HTML público del perfil en lugar de terminar automáticamente la consulta.
+
+La conversión inversa **ID → username** sigue siendo más limitada: los endpoints internos de Instagram pueden devolver **403**, **404** o **429**. Cuando falla la consulta directa, se comprueba si ya existe una asociación previa en el historial local y, si es posible, se contrasta de nuevo con Instagram.
+
+### Consulta inversa asistida con MiniWebtool
+
+Para un ID desconocido que no se pueda resolver automáticamente, la extensión ofrece una ayuda manual mediante [MiniWebtool](https://miniwebtool.com/instagram-user-id-lookup/):
+
+1. En RASTRO ID selecciona **Instagram → ID → Username**, introduce el identificador y pulsa **Buscar**.
+2. Si no se obtiene resultado, pulsa **Consultar en MiniWebtool**.
+3. RASTRO ID abrirá su interfaz en una **pestaña persistente** y MiniWebtool en otra, de forma que el popup no se pierda al cambiar el foco.
+4. Consulta el ID en MiniWebtool y copia el username que aparezca.
+5. Regresa a RASTRO ID, pega el username y pulsa **Contrastar**.
+6. **Solo si Instagram devuelve el mismo ID para ese username**, la extensión registra la asociación como verificada; en caso contrario comunica que el resultado no se ha podido confirmar.
+
+La consulta a MiniWebtool es **manual**, no hay extracción automática ni integración con su API. El servicio es ajeno a RASTRO y puede imponer límites de uso. La versión 1.2.6 **no requiere SandBase ni una API de pago**.
+
+## Instalación en Chrome y Edge
+
+1. Descarga el ZIP de la extensión y **descomprímelo** en una carpeta estable.
+2. Accede a `chrome://extensions` o `edge://extensions`.
+3. Activa **Modo de desarrollador**.
+4. Pulsa **Cargar descomprimida**.
+5. Selecciona la carpeta que contiene el archivo `manifest.json`.
+6. Fija el icono **RASTRO ID** en la barra del navegador para acceder cómodamente.
+
+> Para actualizar una instalación anterior, carga la carpeta nueva y evita mantener dos versiones activas de RASTRO ID, para no confundir los resultados.
+
+## Uso operativo recomendado
+
+- Comprueba siempre que el perfil localizado corresponde a la persona o entidad investigada. **La coincidencia de un identificador no acredita por sí sola la identidad civil del titular.**
+- Distingue en tus informes los datos **obtenidos directamente de una plataforma**, los **proporcionados por terceros** y las **inferencias analíticas**.
+- Conserva la referencia de investigación y revisa las marcas de tiempo y los hashes antes de incorporar datos a un expediente.
+- Si Instagram limita las consultas, evita repetirlas de forma intensiva; no interpretes los errores de acceso como ausencia de la cuenta.
+- Antes de introducir un ID investigado en MiniWebtool, valora la sensibilidad de los datos y el marco normativo aplicable. La consulta implica transmitir ese identificador a un servicio externo.
+- Usa únicamente cuentas y perfiles a los que tengas acceso legítimo y respeta las condiciones aplicables de cada plataforma.
+
+## Arquitectura del proyecto
+
+```text
+rastro-social-id-extension/
+├── manifest.json
+├── background.js
+├── capture/            # Captura puntual de respuestas de X
+├── icons/              # Iconos y logotipo
+├── lib/                # Funciones comunes, historial e informes
+├── providers/          # Instagram, Facebook, TikTok y X
+├── report/             # Vista de informes
+└── ui/                 # Popup e interfaz de usuario
+```
+
+La extensión utiliza **Manifest V3**. El historial y el estado temporal de la consulta asistida se mantienen en el almacenamiento del navegador. No se envían datos a SandBase en esta versión.
+
+## Limitaciones conocidas
+
+- **Instagram:** no se garantiza la conversión automática de ID a username para un identificador no consultado anteriormente. La comprobación asistida depende de fuentes externas y de que Instagram permita verificar la correspondencia.
+- **Facebook:** la disponibilidad del ID depende de los datos que Meta exponga para cada perfil.
+- **X:** ciertas consultas requieren sesión iniciada y pueden verse afectadas por cambios en GraphQL.
+- **TikTok:** pueden aparecer medidas anti-automatización o captchas.
+- Los endpoints no oficiales pueden cambiar sin previo aviso; la extensión no tiene relación oficial con Meta, TikTok o X.
+
+## Estado del proyecto
+
+**v1.2.6 — Versión de prueba.** La estructura y los flujos locales se han revisado, pero la disponibilidad de los endpoints debe comprobarse en el navegador del investigador. No se presentan las consultas externas como verificadas automáticamente.
+
+## Autoría y licencia
+
+Desarrollado por **S3GAD3** como parte del **Kit RASTRO**.
+
+Licencia **MIT**. Para publicarlo en GitHub con esta licencia, añade también el archivo `LICENSE` que contenga el texto completo de la licencia MIT y el titular de copyright correspondiente.
+
+Este proyecto es una herramienta independiente de investigación en fuentes abiertas. No está afiliado ni respaldado por las plataformas consultadas.
